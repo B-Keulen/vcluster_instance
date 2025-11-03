@@ -13,6 +13,6 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: /team1/policies
+  path: ./flux/team1/policies
   prune: true
   wait: true

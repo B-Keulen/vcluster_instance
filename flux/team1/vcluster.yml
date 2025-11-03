@@ -43,6 +43,6 @@ spec:
     kind: GitRepository
     name: flux-system
     namespace: flux-system
-  path: /team1/deployment
+  path: ./flux/team1/deployment
   prune: true
   wait: true
