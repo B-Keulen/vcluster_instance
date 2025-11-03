@@ -5,8 +5,8 @@ metadata:
   name: vcluster
   namespace: team1
 spec:
-  interval: 24h
-  url: https://charts.loft.sh
+interval: 24h
+url: https://charts.loft.sh
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -14,110 +14,126 @@ metadata:
   name: vcluster
   namespace: team1
 spec:
-  serviceAccountName: flux-applier
-  interval: 24h
-  chart:
-    spec:
-      chart: vcluster
-      version: "0.29.1"
-      sourceRef:
-        kind: HelmRepository
-        name: vcluster
-        namespace: team1
-  values:
-    policies:
-      podSecurityStandard: restricted
-    rbac:
-      role:
-        enabled: false
-      clusterRole:
-        enabled: false
-    sync:
-      toHost:
-        pods:
-          enforceTolerations:
-            []
-            
-      fromHost:
-        nodes:
-          selector:
-            labels:
-              {}
+serviceAccountName: flux-applier
+interval: 24h
+chart:
+  spec:
+    chart: vcluster
+    version: "0.29.1"
+    sourceRef:
+      kind: HelmRepository
+      name: vcluster
+      namespace: team1
+values:
+  policies:
+    podSecurityStandard: restricted
+  rbac:
+    role:
+      enabled: false
+    clusterRole:
+      enabled: false
+  sync:
+    toHost:
+      pods:
+        enforceTolerations:
+          - "gpu=true:NoSchedule"
               
-    controlPlane:
-      distro:
-        k8s:
-          enabled: true
-          image:
-            registry: ghcr.io
-            repository: loft-sh/kubernetes
-            tag: "v1.33.4"
-          securityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            runAsGroup: 1001
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type: RuntimeDefault
-      advanced:
-        serviceAccount: 
-          name: flux-applier
-      backingStore:
-        etcd:
-          deploy:
-            enabled: true
-            statefulSet:
-              enabled: true
-              image:
-                registry: registry.k8s.io
-                repository: etcd
-                tag: "3.6.4-0"
-              security:
-                containerSecurityContext:
-                  allowPrivilegeEscalation: false
-                  runAsNonRoot: true
-                  runAsUser: 1001
-                  runAsGroup: 1001
-                  capabilities:
-                    drop:
-                      - ALL
-                  seccompProfile:
-                    type: RuntimeDefault
-              scheduling:
-                nodeSelector:
-                  {}
-                  
-                tolerations:
-                  []
-                  
-      statefulSet:
-        security:
-          podSecurityContext:
-            fsGroup: 1001
-          containerSecurityContext:
-            allowPrivilegeEscalation: false
-            runAsNonRoot: true
-            runAsUser: 1001
-            runAsGroup: 1001
-            capabilities:
-              drop:
-                - ALL
-            seccompProfile:
-              type:
-                RuntimeDefault
-
-        scheduling:
-          nodeSelector:
-            {}
-            
-          tolerations:
-            []
-            
-      ingress:
+      ingresses:
         enabled: true
-        host: team1.team1.com
-        annotations:
-          ingress.cilium.io/tls-passthrough: enabled
+    fromHost:
+      nodes:
+        selector:
+          labels:
+            "gpu": "true"
+                
+      ingressClasses:
+        enabled: true
+        selector:
+          matchLabels:
+            "kubernetes.io/ingress.class": "cilium"
+                
+  controlPlane:
+    distro:
+      k8s:
+        enabled: true
+        image:
+          registry: ghcr.io
+          repository: loft-sh/kubernetes
+          tag: "v1.33.4"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+    advanced:
+      serviceAccount: 
+        name: flux-applier
+    backingStore:
+      etcd:
+        deploy:
+          enabled: true
+          statefulSet:
+            enabled: true
+            image:
+              registry: registry.k8s.io
+              repository: etcd
+              tag: "3.6.4-0"
+            highAvailability:
+              replicas: 3
+            security:
+              containerSecurityContext:
+                allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+                capabilities:
+                  drop:
+                    - ALL
+                seccompProfile:
+                  type: RuntimeDefault
+            scheduling:
+              nodeSelector:
+                "gpu": "true"
+                    
+              tolerations:
+                - "effect": "NoSchedule"
+                  "key": "gpu"
+                  "operator": "Equal"
+                  "value": "true"
+                    
+    statefulSet:
+      security:
+        podSecurityContext:
+          fsGroup: 1001
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1001
+          runAsGroup: 1001
+          capabilities:
+            drop:
+              - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      highAvailability:
+        replicas: 3
+      scheduling:
+        nodeSelector:
+          "gpu": "true"
+              
+        tolerations:
+          - "effect": "NoSchedule"
+            "key": "gpu"
+            "operator": "Equal"
+            "value": "true"
+              
+    ingress:
+      enabled: true
+      host: team1.team1.com
+      annotations:
+        ingress.cilium.io/tls-passthrough: enabled
