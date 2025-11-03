@@ -15,6 +15,7 @@ metadata:
   namespace: team1
 spec:
   serviceAccountName: flux-applier
+  interval: 24h
   chart:
     spec:
       chart: vcluster
