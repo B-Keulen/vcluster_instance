@@ -36,27 +36,13 @@ spec:
       toHost:
         pods:
           enforceTolerations:
-            - "gpu=true:NoSchedule"
-            - "ssd=true:NoSchedule"
-            - "xyz=true:NoSchedule"
+            []
             
-        ingresses:
-          enabled: true
       fromHost:
         nodes:
           selector:
             labels:
-              "gpu": "true"
-              "ssd": "true"
-              "xyz": "true"
-              
-        ingressClasses:
-          enabled: true
-          selector:
-            matchLabels:
-              "kubernetes.io/ingress.class": "cilium"
-              "kubernetes.io/ingress.class2": "cilium2"
-              "kubernetes.io/ingress.class3": "cilium3"
+              {}
               
     controlPlane:
       distro:
@@ -104,23 +90,10 @@ spec:
                     type: RuntimeDefault
               scheduling:
                 nodeSelector:
-                  "gpu": "true"
-                  "ssd": "true"
-                  "xyz": "true"
+                  {}
                   
                 tolerations:
-                  - "effect": "NoSchedule"
-                    "key": "gpu"
-                    "operator": "Equal"
-                    "value": "true"
-                  - "effect": "NoSchedule"
-                    "key": "ssd"
-                    "operator": "Equal"
-                    "value": "true"
-                  - "effect": "NoSchedule"
-                    "key": "xyz"
-                    "operator": "Equal"
-                    "value": "true"
+                  []
                   
       statefulSet:
         security:
@@ -140,23 +113,10 @@ spec:
           replicas: 3
         scheduling:
           nodeSelector:
-            "gpu": "true"
-            "ssd": "true"
-            "xyz": "true"
+            {}
             
           tolerations:
-            - "effect": "NoSchedule"
-              "key": "gpu"
-              "operator": "Equal"
-              "value": "true"
-            - "effect": "NoSchedule"
-              "key": "ssd"
-              "operator": "Equal"
-              "value": "true"
-            - "effect": "NoSchedule"
-              "key": "xyz"
-              "operator": "Equal"
-              "value": "true"
+            []
             
       ingress:
         enabled: true
