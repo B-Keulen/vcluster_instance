@@ -1,0 +1,18 @@
+# TERRAMATE: GENERATED AUTOMATICALLY DO NOT EDIT
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: vcluster-team1-policies
+  namespace: flux-system
+spec:
+  serviceAccountName: kustomize-controller
+  interval: 24h
+  retryInterval: 1m
+  timeout: 5m
+  sourceRef:
+    kind: OCIRepository
+    name: flux-system
+    namespace: flux-system
+  path: /team1/policies
+  prune: true
+  wait: true

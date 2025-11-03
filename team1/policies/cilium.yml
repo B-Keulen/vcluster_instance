@@ -1,0 +1,102 @@
+# TERRAMATE: GENERATED AUTOMATICALLY DO NOT EDIT
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: team1-instance
+  namespace: team1
+spec:
+  endpointSelector:
+    matchLabels:
+      "k8s:app": vcluster
+      "k8s:release": team1
+  ingress:
+    # Allow traffic from within the same namespace
+    - fromEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: team1
+    # Allow traffic from Cilium's Ingress & Host
+    - fromEntities:
+      - ingress
+      - host
+  egress:
+    # Allow traffic to within the same namespace
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: team1
+    # DNS
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: kube-system
+          k8s-app: kube-dns
+      toPorts:
+        - ports:
+          - port: "53"
+            protocol: UDP
+          rules:
+            dns:
+              - matchPattern: "*"
+    # Kube API Server
+    - toEntities:
+      - kube-apiserver
+    - toPorts:
+      - ports:
+          - port: "443"
+            protocol: TCP
+          - port: "8443"
+            protocol: TCP
+          - port: "6443"
+            protocol: TCP
+---
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: team1-workload
+  namespace: team1
+spec:
+  endpointSelector:
+    matchLabels:
+      "vcluster.loft.sh/managed-by": team1
+  ingress:
+    # Allow traffic from within the same namespace
+    - fromEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: team1
+    # Allow traffic from Cilium's Ingress & Host
+    - fromEntities:
+      - ingress
+      - host
+  egress:
+    # Allow traffic to within the same namespace
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: team1
+    # Vcluster api server
+    - toEndpoints:
+      - matchLabels:
+          io.kubernetes.pod.namespace: team1
+          "k8s:app": vcluster
+          "k8s:release": team1
+      toPorts:
+        - ports:
+          - port: "443"
+            protocol: TCP
+          - port: "8443"
+            protocol: TCP
+          - port: "6443"
+            protocol: TCP
+    # Port 53 for DNS
+    - toPorts:
+      - ports:
+          - port: "53"
+            protocol: UDP
+          - port: "53"
+            protocol: TCP
+    # Internet access
+    - toCIDRSet:
+      - cidr: 0.0.0.0/0
+        except:
+          - 100.64.0.0/10
+          - 127.0.0.0/8
+          - 10.0.0.0/8
+          - 127.16.0.0/8
+          - 192.168.0.0/16
